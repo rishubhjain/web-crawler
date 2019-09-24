@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rishubhjain/web-crawler.svg?branch=master)](https://travis-ci.org/rishubhjain/web-crawler)
+
 # web-crawler
 Web Crawler
 
