@@ -13,7 +13,7 @@ import (
 
 var (
 	hostURL = flag.String("hostURL", "http://google.com", "host url to crawl")
-	depth   = flag.Int("depth", 2, "depth")
+	depth   = flag.Int("depth", 1, "depth")
 )
 
 func main() {

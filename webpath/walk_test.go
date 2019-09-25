@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"net/url"
+	"sync"
 	"testing"
 
 	"github.com/rishubhjain/web-crawler/types"
-	
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -42,19 +43,26 @@ func TestWalk(t *testing.T) {
 	client := HTTPFetcherMock{}
 
 	visited := &types.Set{}
+	var wg sync.WaitGroup
 
-	walk(&site, depth, &client, visited)
+	wg.Add(1)
+	walk(&site, depth, &client, visited, &wg)
+	wg.Wait()
 	assert.Equal(t, len(site.Links), 1)
 
 	site.Links = nil
-	walk(&site, 0, &client, visited)
+	wg.Add(1)
+	walk(&site, 0, &client, visited, &wg)
+	wg.Wait()
 	assert.Equal(t, len(site.Links), 0)
 
 	Walk(&site, 0)
 	assert.Equal(t, len(site.Links), 0)
 
 	mockFetcher.On("Fetch", mock.Anything).Return(errors.New("Test Error"))
-	walk(&site, 0, &client, visited)
+	wg.Add(1)
+	walk(&site, 0, &client, visited, &wg)
+	wg.Wait()
 	assert.Equal(t, len(site.Links), 0)
 
 }
