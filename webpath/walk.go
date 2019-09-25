@@ -22,12 +22,12 @@ type walkURL struct {
 func NewWalkURL() WalkURL {
 	return &walkURL{
 		workerPool: worker.WorkerPool{
-			MaxWorkers: 1000, // Make this configurable
+			MaxWorkers: 1000, // ToDO: Make this configurable
 		},
 	}
 }
 
-// Walk walks through each URL and creates the tree
+// Walk walks through each URL and creates adds site to tree
 func (w *walkURL) Walk(work *worker.Work) {
 	var wg sync.WaitGroup
 

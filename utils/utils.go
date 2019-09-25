@@ -3,22 +3,22 @@ package utils
 import "net/url"
 
 // Parse returns parsed URL
-func Parse(rawurl string) (*url.URL, error) {
-	targetURL, err := url.Parse(rawurl)
-	return targetURL, err
+func Parse(hostURL string) (*url.URL, error) {
+	finalURL, err := url.Parse(hostURL)
+	return finalURL, err
 }
 
 // HasSameHost finds out whether two URLs have same host or not
-func HasSameHost(rawURL, siteURL *url.URL) bool {
-	if rawURL.Host == siteURL.Host {
+func HasSameHost(hostURL, siteURL *url.URL) bool {
+	if hostURL.Host == siteURL.Host {
 		return true
 	}
 	return false
 }
 
 // ResolveURL returns resolved URL
-func ResolveURL(rawURL, siteURL *url.URL) *url.URL {
-	newURL := siteURL.ResolveReference(rawURL)
+func ResolveURL(hostURL, siteURL *url.URL) *url.URL {
+	newURL := siteURL.ResolveReference(hostURL)
 	newURL.Fragment = ""
 	return newURL
 }

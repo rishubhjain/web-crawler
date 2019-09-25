@@ -14,26 +14,26 @@ import (
 
 // Crawler abstracts crawling functionality
 type Crawler interface {
-	Crawl(baseURL string, depth int) (*types.Site, error)
+	Crawl(hostURL string, depth int) (*types.Site, error)
 }
 
 // Structure to implement Crawler interface
-type crawler struct {
-}
+type crawler struct{}
 
-// NewCrawler returns a crawler instance
+// NewCrawler returns Crawler instance
 func NewCrawler() Crawler {
 	return &crawler{}
 }
 
-// Crawl function crawls through all URLs returns the base site
-func (c *crawler) Crawl(baseURL string, depth int) (*types.Site, error) {
+// Crawl function parses the host URL and crawls through all the URL's in
+// the site page recursively
+func (c *crawler) Crawl(hostURL string, depth int) (*types.Site, error) {
 
 	// Parse the site URL
-	URL, err := utils.Parse(baseURL)
+	URL, err := utils.Parse(hostURL)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": baseURL}).Error("Failed to parse URL")
+			"URL": hostURL}).Error("Failed to parse URL")
 		return nil, err
 	}
 

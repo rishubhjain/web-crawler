@@ -18,6 +18,7 @@ func TestWalk(t *testing.T) {
 
 	mockFetcher := new(tests.HTTPFetcherMock)
 	mockFetcher.On("Fetch", mock.Anything).Return(nil)
+
 	site := types.Site{URL: &url.URL{
 		Scheme: "http",
 		Host:   "www.google.com",

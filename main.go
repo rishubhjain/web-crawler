@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	hostURL = flag.String("hostURL", "https://google.com", "host url to crawl")
-	depth   = flag.Int("depth", 1, "depth")
+	hostURL = flag.String("hostURL", "https://google.com",
+		"host url to crawl")
+	depth = flag.Int("depth", 1, "depth")
 )
 
 func main() {
@@ -22,17 +23,22 @@ func main() {
 
 	site, err := web.NewCrawler().Crawl(*hostURL, *depth)
 	if err != nil {
-		log.WithFields(log.Fields{"Error": err, "URL": hostURL}).Error("Failed to crawl")
+		log.WithFields(log.Fields{"Error": err,
+			"URL": hostURL}).Error("Failed to crawl")
 		return
 	}
 	elapsed := time.Since(now)
 
 	file, err := os.Create("sitemap")
 	if err != nil {
-		log.WithFields(log.Fields{"Error": err}).Error("Failed to open file")
+		log.WithFields(log.Fields{"Error": err}).
+			Error("Failed to open file")
 		return
 	}
+
 	defer file.Close()
+	// Print Sitemap in file
 	site.Print(file, 0)
+
 	fmt.Println(elapsed)
 }

@@ -25,7 +25,8 @@ func NewHTTPFetcherMock(client *http.Client) fetch.Fetcher {
 	return &httpFetcherMock{}
 }
 
-func (h *httpFetcherMock) Fetch(ctx context.Context, site *types.Site) (err error) {
+func (h *httpFetcherMock) Fetch(ctx context.Context,
+	site *types.Site) (err error) {
 	newSite := types.Site{URL: &url.URL{
 		Scheme: "http",
 		Host:   "www.google.com",
@@ -37,7 +38,7 @@ func (h *httpFetcherMock) Fetch(ctx context.Context, site *types.Site) (err erro
 
 func TestCrawl(t *testing.T) {
 
-	body := tests.ParseHTML(t, "../tests/fixtures/google.com.html")
+	body := tests.ParseHTML(t, "../tests/fixtures/test.html")
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 

@@ -16,7 +16,7 @@ import (
 
 func TestFetch(t *testing.T) {
 
-	body := tests.ParseHTML(t, "../tests/fixtures/google.com.html")
+	body := tests.ParseHTML(t, "../tests/fixtures/test.html")
 	// Start a local HTTP server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 

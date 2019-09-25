@@ -8,9 +8,9 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	targetURL, err := Parse("https://google.com")
+	finalURL, err := Parse("https://google.com")
 	assert.Nil(t, err)
-	assert.Equal(t, targetURL.Host, "google.com")
+	assert.Equal(t, finalURL.Host, "google.com")
 
 	_, err = Parse("h//*goo%&^gle")
 	assert.NotNil(t, err)
