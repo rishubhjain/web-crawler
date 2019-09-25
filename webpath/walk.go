@@ -2,51 +2,79 @@ package webpath
 
 import (
 	"context"
-	"net/http"
 	"sync"
 
-	"github.com/rishubhjain/web-crawler/fetch"
-	"github.com/rishubhjain/web-crawler/types"
+	"github.com/rishubhjain/web-crawler/worker"
 
 	log "github.com/sirupsen/logrus"
 )
 
+// WalkURL abtracts walk functionality
+type WalkURL interface {
+	Walk(*worker.Work)
+}
+
+type walkURL struct {
+	workerPool worker.WorkerPool
+}
+
+// NewWalkURL returns a walkURL instance
+func NewWalkURL() WalkURL {
+	return &walkURL{
+		workerPool: worker.WorkerPool{
+			MaxWorkers: 1000, // Make this configurable
+		},
+	}
+}
+
 // Walk walks through each URL and creates the tree
-func Walk(site *types.Site, depth int) {
-	// Using default http client for now
+func (w *walkURL) Walk(work *worker.Work) {
 	var wg sync.WaitGroup
+
+	w.workerPool.Fn = w.walk
+
+	// Initialize the Worker Pool
+	w.workerPool.Initialize()
+	work.Wg = &wg
+
 	wg.Add(1)
-	go walk(site, depth, fetch.NewHTTPFetcher(http.DefaultClient), &types.Set{}, &wg)
+
+	w.workerPool.AddWork(work)
 	wg.Wait()
 }
 
-func walk(site *types.Site, depth int, fetcher fetch.Fetcher, visited *types.Set, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (w *walkURL) walk(work *worker.Work) {
+	defer work.Wg.Done()
 	// Check whether the URL has been already visited or not
-	if visited.Has(site.URL.String()) {
+	if work.Visited.Has(work.Site.URL.String()) {
 		return
 	}
 
 	// Check whether max depth has reached or not
-	if depth <= 0 {
+	if work.Depth <= 0 {
 		return
 	}
 
-	visited = visited.Add(site.URL.String())
+	work.Visited = work.Visited.Add(work.Site.URL.String())
 
 	// Fetch all URLs in the site
-	err := fetcher.Fetch(context.Background(), site)
+	err := work.Fetcher.Fetch(context.Background(), work.Site)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": site.URL.String()}).Error("Failed to fetch urls")
+			"URL": work.Site.URL.String()}).Error("Failed to fetch urls")
 		return
 	}
 
-	for _, childURL := range site.Links {
-		wg.Add(1)
-		// Go-routines to fetch urls for all childurls of site
-		go func(childURL *types.Site, visited *types.Set) {
-			walk(childURL, depth-1, fetcher, visited, wg)
-		}(childURL, visited)
+	// Loop through all the URLs to walk through each url
+	for _, childURL := range work.Site.Links {
+		work.Wg.Add(1)
+		work := worker.Work{
+			Site:    childURL,
+			Depth:   work.Depth - 1,
+			Fetcher: work.Fetcher,
+			Visited: work.Visited,
+			Wg:      work.Wg,
+		}
+		w.workerPool.AddWork(&work)
 	}
 }

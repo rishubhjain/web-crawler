@@ -1,9 +1,13 @@
 package web
 
 import (
+	"net/http"
+
+	"github.com/rishubhjain/web-crawler/fetch"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
 	"github.com/rishubhjain/web-crawler/webpath"
+	"github.com/rishubhjain/web-crawler/worker"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -35,6 +39,18 @@ func (c *crawler) Crawl(baseURL string, depth int) (*types.Site, error) {
 
 	// Start crawling from the base site
 	site := &types.Site{URL: URL}
-	webpath.Walk(site, depth)
+	walkObj := webpath.NewWalkURL()
+
+	// Creating work for the Walk function
+	work := worker.Work{
+		Site:  site,
+		Depth: depth,
+		// Using default http client for now
+		Fetcher: fetch.NewHTTPFetcher(http.DefaultClient),
+		Visited: &types.Set{},
+		Wg:      nil,
+	}
+
+	walkObj.Walk(&work)
 	return site, nil
 }

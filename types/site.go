@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,10 +15,13 @@ import (
 type Site struct {
 	URL   *url.URL
 	Links []*Site
+	lock  sync.RWMutex
 }
 
 // AddLink adds links to Site
 func (s *Site) AddLink(link *Site) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	s.Links = append(s.Links, link)
 }
 
