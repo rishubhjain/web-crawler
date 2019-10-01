@@ -4,9 +4,9 @@ import "sync"
 
 // Set stores a hashmap for URL, used for storing visited URL
 type Set struct {
-	URL map[string]bool
 	// to synchronize access to the set
 	lock sync.RWMutex
+	URL  map[string]bool
 }
 
 // Add adds a new url to the URL Set. Returns a pointer to the Set.

@@ -13,14 +13,17 @@ import (
 // Site struct stores the site URL and sites that
 // can be accessed through this Site
 type Site struct {
-	URL   *url.URL
-	Links []*Site
 	lock  sync.RWMutex
+	Links []*Site
+
+	URL *url.URL
 }
 
 // AddLink adds links to Site
 func (s *Site) AddLink(link *Site) {
 	s.lock.Lock()
+	// TODO: defer is marginally more expensive than direct unlock calls
+	// In a wider system its better to unlock manually to make the system faster
 	defer s.lock.Unlock()
 	s.Links = append(s.Links, link)
 }
