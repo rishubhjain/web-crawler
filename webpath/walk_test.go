@@ -3,7 +3,6 @@ package webpath
 import (
 	"errors"
 	"net/url"
-	"sync"
 	"testing"
 
 	"github.com/rishubhjain/web-crawler/tests"
@@ -26,38 +25,28 @@ func TestWalk(t *testing.T) {
 		Links: nil}
 	depth := 1
 
-	// Create client from the mocked fetcher
-	client := tests.HTTPFetcherMock{}
-
 	visited := &types.Set{}
-	var wg sync.WaitGroup
 
 	mockWorker := new(tests.WorkerMock)
 	mockWorker.On("Start", mock.Anything).Return(nil)
 
-	wg.Add(1)
 	work := worker.Work{
-		Site:  &site,
-		Depth: depth,
-		// Using default http client for now
-		Fetcher: &client,
+		Site:    &site,
+		Depth:   depth,
 		Visited: visited,
-		Wg:      &wg,
 	}
 
 	walkObj := NewWalkURL()
 	walkObj.Walk(&work)
-	//wg.Wait()
-	assert.Equal(t, len(site.Links), 1)
+	assert.Equal(t, len(site.Links), 18)
 
 	site.Links = nil
-	wg.Add(1)
 	walkObj.Walk(&work)
 
 	assert.Equal(t, len(site.Links), 0)
 
 	mockFetcher.On("Fetch", mock.Anything).Return(errors.New("Test Error"))
-	wg.Add(1)
+
 	walkObj.Walk(&work)
 
 	assert.Equal(t, len(site.Links), 0)

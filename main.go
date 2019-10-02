@@ -38,6 +38,7 @@ func main() {
 
 	defer file.Close()
 	// Print Sitemap in file
+	// if nil is passed then print the links in lognil
 	site.Print(file, 0)
 
 	fmt.Println(elapsed)

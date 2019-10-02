@@ -1,9 +1,6 @@
 package web
 
 import (
-	"net/http"
-
-	"github.com/rishubhjain/web-crawler/fetch"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
 	"github.com/rishubhjain/web-crawler/webpath"
@@ -45,10 +42,9 @@ func (c *crawler) Crawl(hostURL string, depth int) (*types.Site, error) {
 	work := worker.Work{
 		Site:  site,
 		Depth: depth,
-		// Using default http client for now
-		Fetcher: fetch.NewHTTPFetcher(http.DefaultClient),
+		// the visited URl is initiated here, but it can be
+		// fetched from a central store and passed on.
 		Visited: &types.Set{},
-		Wg:      nil,
 	}
 
 	walkObj.Walk(&work)

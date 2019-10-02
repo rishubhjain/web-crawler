@@ -9,20 +9,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestInitialize(t *testing.T) {
+func initialize() *WorkerPool {
 	workerPool := WorkerPool{
 		MaxWorkers: 1,
 		Fn:         func(work *Work) {},
 	}
 	workerPool.Initialize()
+	return &workerPool
+}
+func TestInitialize(t *testing.T) {
+	workerPool := initialize()
+	assert.Equal(t, len(workerPool.jobs), 0)
 }
 
 func TestAddWork(t *testing.T) {
-	workerPool := WorkerPool{
-		MaxWorkers: 1,
-		Fn:         func(work *Work) {},
-	}
-	workerPool.Initialize()
+	workerPool := initialize()
 
 	mockWorker := new(tests.WorkerMock)
 	mockWorker.On("Start", mock.Anything).Return(nil)

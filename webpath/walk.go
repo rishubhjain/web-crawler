@@ -2,8 +2,10 @@ package webpath
 
 import (
 	"context"
-	"sync"
+	"net/http"
+	"time"
 
+	"github.com/rishubhjain/web-crawler/fetch"
 	"github.com/rishubhjain/web-crawler/worker"
 
 	log "github.com/sirupsen/logrus"
@@ -16,35 +18,38 @@ type WalkURL interface {
 
 type walkURL struct {
 	workerPool worker.WorkerPool
+	fetcher    fetch.Fetcher
+	jobQueue   chan worker.Work
 }
 
 // NewWalkURL returns a walkURL instance
 func NewWalkURL() WalkURL {
+	// ToDo: Make this configurable
 	return &walkURL{
 		workerPool: worker.WorkerPool{
-			MaxWorkers: 1000, // ToDO: Make this configurable
+			MaxWorkers: 10000,
 		},
+		// Using default http client for now
+		fetcher:  fetch.NewHTTPFetcher(http.DefaultClient),
+		jobQueue: make(chan worker.Work, 10000),
 	}
 }
 
-// Walk walks through each URL and creates adds site to tree
+// Walk function walks through each URL and adds site to tree
 func (w *walkURL) Walk(work *worker.Work) {
-	var wg sync.WaitGroup
 
 	w.workerPool.Fn = w.walk
 
 	// Initialize the Worker Pool
 	w.workerPool.Initialize()
-	work.Wg = &wg
-
-	wg.Add(1)
+	// go w.walk(work)
+	// faninApproach(w)
 
 	w.workerPool.AddWork(work)
-	wg.Wait()
+	w.workerPool.Wait()
 }
 
 func (w *walkURL) walk(work *worker.Work) {
-	defer work.Wg.Done()
 	// Check whether the URL has been already visited or not
 	if work.Visited.Has(work.Site.URL.String()) {
 		return
@@ -58,7 +63,7 @@ func (w *walkURL) walk(work *worker.Work) {
 	work.Visited = work.Visited.Add(work.Site.URL.String())
 
 	// Fetch all URLs in the site
-	err := work.Fetcher.Fetch(context.Background(), work.Site)
+	err := w.fetcher.Fetch(context.Background(), work.Site)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
 			"URL": work.Site.URL.String()}).Error("Failed to fetch urls")
@@ -67,14 +72,36 @@ func (w *walkURL) walk(work *worker.Work) {
 
 	// Loop through all the URLs to walk through each url
 	for _, childURL := range work.Site.Links {
-		work.Wg.Add(1)
-		work := worker.Work{
+		job := worker.Work{
 			Site:    childURL,
 			Depth:   work.Depth - 1,
-			Fetcher: work.Fetcher,
 			Visited: work.Visited,
-			Wg:      work.Wg,
 		}
-		w.workerPool.AddWork(&work)
+		//w.jobQueue <- job
+		w.workerPool.AddWork(&job)
 	}
+}
+
+func faninApproach(w *walkURL) {
+	loop := true
+	for loop {
+		select {
+		case doWork := <-w.jobQueue:
+			w.workerPool.AddWork(&doWork)
+		// ToDo: Make this configurable
+		// This will kill the process if the time exceeds
+		// a certain limit. this should be a kind of time out
+		case <-time.After(time.Hour):
+			loop = false
+			return
+		// To check whether the all the jobs are finished or not
+		// This has an edge case where temperorily there is no
+		// job in the queue
+		case <-time.Tick(10 * time.Second):
+			if w.workerPool.JobCount() == 0 {
+				loop = false
+			}
+		}
+	}
+	return
 }

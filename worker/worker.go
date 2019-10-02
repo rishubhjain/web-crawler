@@ -3,7 +3,6 @@ package worker
 import (
 	"sync"
 
-	"github.com/rishubhjain/web-crawler/fetch"
 	"github.com/rishubhjain/web-crawler/types"
 )
 
@@ -15,15 +14,16 @@ type Worker interface {
 type worker struct {
 	Fn    func(*Work)
 	Queue chan Work
+	Wg    *sync.WaitGroup
+	End   chan bool
 }
 
 // Work struct stores arguments of function to be called
+// ToDo: also store errors. and move Work to type package
 type Work struct {
 	Site    *types.Site
 	Depth   int
-	Fetcher fetch.Fetcher
 	Visited *types.Set
-	Wg      *sync.WaitGroup
 }
 
 // Start a worker
@@ -32,7 +32,20 @@ func (w *worker) Start() {
 }
 
 func (w *worker) run() {
-	for work := range w.Queue {
-		w.Fn(&work)
+	for {
+		// make the channel available
+		select {
+		case work := <-w.Queue:
+			w.Fn(&work)
+			w.Wg.Done()
+		// To stop the worker
+		case <-w.End:
+			return
+		}
 	}
+}
+
+// Stop function is used to stop the worker
+func (w *worker) Stop() {
+	w.End <- true
 }
