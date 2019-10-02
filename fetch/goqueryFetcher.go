@@ -31,7 +31,7 @@ func (h *goqueryFetcher) Fetch(ctx context.Context, site *types.Site) (err error
 	resp, err := h.client.Get(site.URL.String())
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": site.URL.String()}).Error(cerror.ErrHTMLfetchFailed)
+			"URL": site.URL.String()}).Error(cerror.ErrGetRespFailed)
 		return err
 	}
 

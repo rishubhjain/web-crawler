@@ -66,7 +66,7 @@ func (w *walkURL) walk(work *worker.Work) {
 	err := w.fetcher.Fetch(context.Background(), work.Site)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": work.Site.URL.String()}).Error(cerror.ErrURLfetchFailed)
+			"URL": work.Site.URL.String()}).Error(cerror.ErrFetchFailed)
 		return
 	}
 

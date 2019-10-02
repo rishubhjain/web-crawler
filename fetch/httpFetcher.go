@@ -29,10 +29,17 @@ func (h *httpFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
 	seenRefs := make(map[string]struct{})
 
 	rootURL := site.URL
-	resp, err := h.client.Get(rootURL.String())
+
+	retry := types.RetryingClient{
+		Client:      h.client,
+		MaxAttempts: 2,
+	}
+
+	resp, err := retry.Get(rootURL.String())
 	if err != nil {
+		// TODO: Impletment retry mechanism
 		log.WithFields(log.Fields{"Error": err,
-			"URL": rootURL.String()}).Error(cerror.ErrHTMLfetchFailed)
+			"URL": rootURL.String()}).Error(cerror.ErrGetRespFailed)
 		return err
 	}
 

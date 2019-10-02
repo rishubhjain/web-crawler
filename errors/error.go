@@ -6,8 +6,8 @@ import "errors"
 var (
 	ErrCrawlFailed          = errors.New("Crawling failed")
 	ErrFileCreateFailed     = errors.New("Failed to create file")
-	ErrURLfetchFailed       = errors.New("Failed to fetch urls")
+	ErrFetchFailed          = errors.New("Failed to fetch site from url")
 	ErrURLparseFailed       = errors.New("Failed to parse URL")
-	ErrHTMLfetchFailed      = errors.New("Failed to get HTML")
+	ErrGetRespFailed        = errors.New("Failed to get response")
 	ErrCreateDocumentFailed = errors.New("Failed to create document from HTML Body")
 )
