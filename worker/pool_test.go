@@ -9,6 +9,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func mockWorker() {
+
+}
+
 func initialize() *WorkerPool {
 	workerPool := WorkerPool{
 		MaxWorkers: 1,
@@ -31,4 +35,30 @@ func TestAddWork(t *testing.T) {
 	work := Work{Depth: 1}
 	workerPool.AddWork(&work)
 	assert.Equal(t, len(workerPool.workers), 1)
+}
+
+func TestJobCount(t *testing.T) {
+	workerPool := initialize()
+
+	mockWorker := new(tests.WorkerMock)
+	mockWorker.On("Start", mock.Anything).Return(nil)
+
+	work := Work{Depth: 1}
+	workerPool.AddWork(&work)
+	assert.Equal(t, workerPool.JobCount(), 1)
+}
+
+func TestStopWorkers(t *testing.T) {
+	workerPool := initialize()
+
+	mockWorker := new(tests.WorkerMock)
+	mockWorker.On("Start", mock.Anything).Return(nil)
+
+	work := Work{Depth: 1}
+	workerPool.AddWork(&work)
+	assert.Equal(t, len(workerPool.workers), 1)
+
+	workerPool.StopWorkers()
+	assert.Equal(t, len(workerPool.workers), 0)
+
 }

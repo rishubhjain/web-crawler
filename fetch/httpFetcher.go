@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
 
@@ -31,7 +32,7 @@ func (h *httpFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
 	resp, err := h.client.Get(rootURL.String())
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": rootURL.String()}).Error("Failed to get HTML")
+			"URL": rootURL.String()}).Error(cerror.ErrHTMLfetchFailed)
 		return err
 	}
 

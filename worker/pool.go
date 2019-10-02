@@ -24,6 +24,7 @@ func (pool *WorkerPool) AddWork(work *Work) {
 			Queue: pool.jobs,
 			Fn:    pool.Fn,
 			Wg:    &pool.Wg,
+			End:   make(chan bool),
 		}
 		workerObj.Start()
 		pool.workers = append(pool.workers, workerObj)
@@ -41,8 +42,9 @@ func (pool *WorkerPool) Wait() {
 
 // StopWorkers will stop all workers
 func (pool *WorkerPool) StopWorkers() {
-	for _, worker := range pool.workers {
+	for i, worker := range pool.workers {
 		worker.Stop()
+		pool.workers = append(pool.workers[:i], pool.workers[i+1:]...)
 	}
 }
 

@@ -1,6 +1,7 @@
 package web
 
 import (
+	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
 	"github.com/rishubhjain/web-crawler/webpath"
@@ -30,7 +31,7 @@ func (c *crawler) Crawl(hostURL string, depth int) (*types.Site, error) {
 	URL, err := utils.Parse(hostURL)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": hostURL}).Error("Failed to parse URL")
+			"URL": hostURL}).Error(cerror.ErrURLparseFailed)
 		return nil, err
 	}
 

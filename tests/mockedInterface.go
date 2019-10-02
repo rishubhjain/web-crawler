@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/rishubhjain/web-crawler/types"
+
 	"github.com/stretchr/testify/mock"
 )
 
@@ -23,7 +24,7 @@ func (h *HTTPFetcherMock) Fetch(ctx context.Context, site *types.Site) (err erro
 	return nil
 }
 
-//Mocking Worker Interface
+// Mocking Worker Interface
 type WorkerMock struct {
 	mock.Mock
 }

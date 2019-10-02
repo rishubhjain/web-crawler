@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/web"
 
 	log "github.com/sirupsen/logrus"
@@ -24,7 +25,7 @@ func main() {
 	site, err := web.NewCrawler().Crawl(*hostURL, *depth)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": hostURL}).Error("Failed to crawl")
+			"URL": hostURL}).Error(cerror.ErrCrawlFailed)
 		return
 	}
 	elapsed := time.Since(now)
@@ -32,7 +33,7 @@ func main() {
 	file, err := os.Create("sitemap")
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err}).
-			Error("Failed to open file")
+			Error(cerror.ErrFileCreateFailed)
 		return
 	}
 

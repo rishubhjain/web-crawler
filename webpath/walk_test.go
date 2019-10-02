@@ -38,7 +38,7 @@ func TestWalk(t *testing.T) {
 
 	walkObj := NewWalkURL()
 	walkObj.Walk(&work)
-	assert.Equal(t, len(site.Links), 18)
+	assert.Equal(t, len(site.Links), 17)
 
 	site.Links = nil
 	walkObj.Walk(&work)

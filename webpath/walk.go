@@ -3,8 +3,8 @@ package webpath
 import (
 	"context"
 	"net/http"
-	"time"
 
+	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/fetch"
 	"github.com/rishubhjain/web-crawler/worker"
 
@@ -66,7 +66,7 @@ func (w *walkURL) walk(work *worker.Work) {
 	err := w.fetcher.Fetch(context.Background(), work.Site)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": work.Site.URL.String()}).Error("Failed to fetch urls")
+			"URL": work.Site.URL.String()}).Error(cerror.ErrURLfetchFailed)
 		return
 	}
 
@@ -82,26 +82,26 @@ func (w *walkURL) walk(work *worker.Work) {
 	}
 }
 
-func faninApproach(w *walkURL) {
-	loop := true
-	for loop {
-		select {
-		case doWork := <-w.jobQueue:
-			w.workerPool.AddWork(&doWork)
-		// ToDo: Make this configurable
-		// This will kill the process if the time exceeds
-		// a certain limit. this should be a kind of time out
-		case <-time.After(time.Hour):
-			loop = false
-			return
-		// To check whether the all the jobs are finished or not
-		// This has an edge case where temperorily there is no
-		// job in the queue
-		case <-time.Tick(10 * time.Second):
-			if w.workerPool.JobCount() == 0 {
-				loop = false
-			}
-		}
-	}
-	return
-}
+// func faninApproach(w *walkURL) {
+// 	loop := true
+// 	for loop {
+// 		select {
+// 		case doWork := <-w.jobQueue:
+// 			w.workerPool.AddWork(&doWork)
+// 		// ToDo: Make this configurable
+// 		// This will kill the process if the time exceeds
+// 		// a certain limit. this should be a kind of time out
+// 		case <-time.After(time.Hour):
+// 			loop = false
+// 			return
+// 		// To check whether the all the jobs are finished or not
+// 		// This has an edge case where temperorily there is no
+// 		// job in the queue
+// 		case <-time.Tick(10 * time.Second):
+// 			if w.workerPool.JobCount() == 0 {
+// 				loop = false
+// 			}
+// 		}
+// 	}
+// 	return
+// }

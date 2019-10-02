@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
 
@@ -30,7 +31,7 @@ func (h *goqueryFetcher) Fetch(ctx context.Context, site *types.Site) (err error
 	resp, err := h.client.Get(site.URL.String())
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": site.URL.String()}).Error("Failed to get HTML")
+			"URL": site.URL.String()}).Error(cerror.ErrHTMLfetchFailed)
 		return err
 	}
 
@@ -39,7 +40,7 @@ func (h *goqueryFetcher) Fetch(ctx context.Context, site *types.Site) (err error
 	document, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
-			"URL": site.URL.String()}).Error("Failed to create document from HTML Body")
+			"URL": site.URL.String()}).Error(cerror.ErrCreateDocumentFailed)
 		return err
 	}
 
