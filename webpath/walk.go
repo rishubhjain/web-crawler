@@ -3,6 +3,7 @@ package webpath
 import (
 	"context"
 	"net/http"
+	"time"
 
 	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/fetch"
@@ -42,11 +43,41 @@ func (w *walkURL) Walk(work *worker.Work) {
 
 	// Initialize the Worker Pool
 	w.workerPool.Initialize()
-	// go w.walk(work)
-	// faninApproach(w)
 
+	// Fan In approach - ignore
+	// {
+	// 	go w.walk(work)
+	// }
+
+	stop := make(chan bool, 1)
+
+	// Start the crawling process with head URL
 	w.workerPool.AddWork(work)
-	w.workerPool.Wait()
+
+	// Wait for all the goroutines to finish
+	go func() {
+		w.workerPool.Wait()
+		stop <- true
+	}()
+
+	// To stop the crawler when either all goroutines finish the work
+	// or time taken exceeds 1 hour
+	for {
+		select {
+		case <-stop:
+			return
+		// TODO: Make this configurable
+		case <-time.After(time.Hour):
+			return
+			// Fan In approach
+			/* case doWork := <-w.jobQueue:
+				w.workerPool.AddWork(&doWork)
+			case <-time.Tick(10 * time.Second):
+				if w.workerPool.JobCount() == 0 {
+					return
+				} */
+		}
+	}
 }
 
 func (w *walkURL) walk(work *worker.Work) {
@@ -81,27 +112,3 @@ func (w *walkURL) walk(work *worker.Work) {
 		w.workerPool.AddWork(&job)
 	}
 }
-
-// func faninApproach(w *walkURL) {
-// 	loop := true
-// 	for loop {
-// 		select {
-// 		case doWork := <-w.jobQueue:
-// 			w.workerPool.AddWork(&doWork)
-// 		// ToDo: Make this configurable
-// 		// This will kill the process if the time exceeds
-// 		// a certain limit. this should be a kind of time out
-// 		case <-time.After(time.Hour):
-// 			loop = false
-// 			return
-// 		// To check whether the all the jobs are finished or not
-// 		// This has an edge case where temperorily there is no
-// 		// job in the queue
-// 		case <-time.Tick(10 * time.Second):
-// 			if w.workerPool.JobCount() == 0 {
-// 				loop = false
-// 			}
-// 		}
-// 	}
-// 	return
-// }
