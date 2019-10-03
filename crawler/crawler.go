@@ -1,10 +1,9 @@
-package web
+package crawler
 
 import (
 	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
-	"github.com/rishubhjain/web-crawler/webpath"
 	"github.com/rishubhjain/web-crawler/worker"
 
 	log "github.com/sirupsen/logrus"
@@ -37,7 +36,7 @@ func (c *crawler) Crawl(hostURL string, depth int) (*types.Site, error) {
 
 	// Start crawling from the base site
 	site := &types.Site{URL: URL}
-	crawlSiteObj := webpath.New()
+	crawlSiteObj := NewCrawlSite()
 
 	// Creating work for the Walk function
 	work := worker.Work{

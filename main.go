@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	c "github.com/rishubhjain/web-crawler/crawler"
 	cerror "github.com/rishubhjain/web-crawler/errors"
-	"github.com/rishubhjain/web-crawler/web"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -22,7 +22,7 @@ func main() {
 	flag.Parse()
 	now := time.Now()
 
-	site, err := web.NewCrawler().Crawl(*hostURL, *depth)
+	site, err := c.NewCrawler().Crawl(*hostURL, *depth)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
 			"URL": hostURL}).Error(cerror.ErrCrawlFailed)

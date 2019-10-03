@@ -1,4 +1,4 @@
-package fetch
+package parse
 
 import (
 	"context"
@@ -12,26 +12,31 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// GoqueryFetcher structure implements Fetcher interface
-type goqueryFetcher struct {
+// GoqueryParser structure implements Parser interface
+type goqueryParser struct {
 	client *http.Client
 }
 
-// NewGoqueryFetcher returns a crawler instance
-func NewGoqueryFetcher(client *http.Client) Fetcher {
-	return &goqueryFetcher{client: client}
+// NewGoqueryParser returns a parser instance
+func NewGoqueryParser(client *http.Client) Parser {
+	return &goqueryParser{client: client}
 }
 
-// Fetch fetches URL using Goquery
-func (h *goqueryFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
+// Parse creates goquery document from Site URL and parses it to extract URL
+func (h *goqueryParser) Parse(ctx context.Context, site *types.Site) (err error) {
 
 	// Local visited urls
 	seenURLs := make(map[string]struct{})
 
-	resp, err := h.client.Get(site.URL.String())
+	retry := types.RetryingClient{
+		Client:      h.client,
+		MaxAttempts: 2,
+	}
+
+	// Get Page from URL
+	resp, err := retry.Get(site.URL.String())
 	if err != nil {
-		log.WithFields(log.Fields{"Error": err,
-			"URL": site.URL.String()}).Error(cerror.ErrGetRespFailed)
+		// Logged in the caller function
 		return err
 	}
 
@@ -44,13 +49,14 @@ func (h *goqueryFetcher) Fetch(ctx context.Context, site *types.Site) (err error
 		return err
 	}
 
-	// Fetch Links
+	// Parse page to get links
 	document.Find("a").Each(func(index int, element *goquery.Selection) {
 		// Check whther the href attribute exists on the element or not
 		href, exists := element.Attr("href")
 		if exists {
 			tempURL, err := utils.Parse(href)
 			if err != nil {
+				// Debug logs
 				log.WithFields(log.Fields{"Error": err,
 					"URL": href}).Debug("Failed to parse href")
 				return
@@ -72,5 +78,4 @@ func (h *goqueryFetcher) Fetch(ctx context.Context, site *types.Site) (err error
 		}
 	})
 	return nil
-
 }

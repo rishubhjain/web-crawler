@@ -1,4 +1,4 @@
-package webpath
+package crawler
 
 import (
 	"errors"
@@ -15,8 +15,8 @@ import (
 
 func TestRun(t *testing.T) {
 
-	mockFetcher := new(tests.HTTPFetcherMock)
-	mockFetcher.On("Fetch", mock.Anything).Return(nil)
+	mockParser := new(tests.HTTPParserMock)
+	mockParser.On("Parse", mock.Anything).Return(nil)
 
 	site := types.Site{URL: &url.URL{
 		Scheme: "http",
@@ -36,7 +36,7 @@ func TestRun(t *testing.T) {
 		Visited: visited,
 	}
 
-	crawlObj := New()
+	crawlObj := NewCrawlSite()
 	crawlObj.Run(&work)
 	assert.Equal(t, len(site.Links), 17)
 
@@ -45,7 +45,7 @@ func TestRun(t *testing.T) {
 
 	assert.Equal(t, len(site.Links), 0)
 
-	mockFetcher.On("Fetch", mock.Anything).Return(errors.New("Test Error"))
+	mockParser.On("Parse", mock.Anything).Return(errors.New("Test Error"))
 
 	crawlObj.Run(&work)
 

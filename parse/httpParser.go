@@ -1,10 +1,9 @@
-package fetch
+package parse
 
 import (
 	"context"
 	"net/http"
 
-	cerror "github.com/rishubhjain/web-crawler/errors"
 	"github.com/rishubhjain/web-crawler/types"
 	"github.com/rishubhjain/web-crawler/utils"
 
@@ -12,18 +11,18 @@ import (
 	"golang.org/x/net/html"
 )
 
-// HTTPFetcher structure implements Fetcher interface
-type httpFetcher struct {
+// httpParser structure implements Parser interface
+type httpParser struct {
 	client *http.Client
 }
 
-// NewHTTPFetcher returns a crawler instance
-func NewHTTPFetcher(client *http.Client) Fetcher {
-	return &httpFetcher{client: client}
+// NewHTTPParser returns a parser instance
+func NewHTTPParser(client *http.Client) Parser {
+	return &httpParser{client: client}
 }
 
-// Fetch fetches URL using tokenizer
-func (h *httpFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
+// Parse extracts URL from web page using html tokenizer
+func (h *httpParser) Parse(ctx context.Context, site *types.Site) (err error) {
 
 	// Local visited urls
 	seenRefs := make(map[string]struct{})
@@ -35,11 +34,10 @@ func (h *httpFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
 		MaxAttempts: 2,
 	}
 
+	// Get Page from URL
 	resp, err := retry.Get(rootURL.String())
 	if err != nil {
-		// TODO: Impletment retry mechanism
-		log.WithFields(log.Fields{"Error": err,
-			"URL": rootURL.String()}).Error(cerror.ErrGetRespFailed)
+		// Logged in the caller function
 		return err
 	}
 
@@ -58,7 +56,7 @@ func (h *httpFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
 		}
 
 		token := tokenizer.Token()
-		// Get links
+		// Extract links
 		if token.DataAtom.String() != "a" && token.DataAtom.String() != "link" {
 			continue
 		}
@@ -69,6 +67,7 @@ func (h *httpFetcher) Fetch(ctx context.Context, site *types.Site) (err error) {
 			}
 			tempURL, err := utils.Parse(attr.Val)
 			if err != nil {
+				// Debug logs
 				log.WithFields(log.Fields{"Error": err,
 					"URL": attr.Val}).Debug("Failed to parse href")
 				continue

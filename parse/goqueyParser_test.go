@@ -1,4 +1,4 @@
-package fetch
+package parse
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFetchHttp(t *testing.T) {
+func TestParse(t *testing.T) {
 
 	body := tests.ParseHTML(t, "../tests/fixtures/test.html")
 	// Start a local HTTP server
@@ -27,13 +27,13 @@ func TestFetchHttp(t *testing.T) {
 	defer server.Close()
 
 	// Use Client & URL from our local test server
-	client := NewHTTPFetcher(server.Client())
+	client := NewGoqueryParser(server.Client())
 
 	URL, err := utils.Parse(server.URL)
 	assert.Nil(t, err)
 	site := types.Site{URL: URL, Links: nil}
 
-	err = client.Fetch(context.Background(), &site)
+	err = client.Parse(context.Background(), &site)
 	assert.Nil(t, err)
 	assert.Equal(t, len(site.Links), 2)
 
@@ -43,7 +43,7 @@ func TestFetchHttp(t *testing.T) {
 	},
 		Links: nil}
 
-	err = client.Fetch(context.Background(), &site)
+	err = client.Parse(context.Background(), &site)
 	assert.NotNil(t, err)
 
 }

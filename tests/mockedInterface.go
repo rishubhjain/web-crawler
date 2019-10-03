@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// Mocking Fetcher Interface
-type HTTPFetcherMock struct {
+// Mocking Parser Interface
+type HTTPParserMock struct {
 	mock.Mock
 }
 
-func (h *HTTPFetcherMock) Fetch(ctx context.Context, site *types.Site) (err error) {
+func (h *HTTPParserMock) Parse(ctx context.Context, site *types.Site) (err error) {
 	newSite := types.Site{URL: &url.URL{
 		Scheme: "http",
 		Host:   "www.google.com",

@@ -1,40 +1,15 @@
-package web
+package crawler
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
-	"github.com/rishubhjain/web-crawler/fetch"
 	"github.com/rishubhjain/web-crawler/tests"
-	"github.com/rishubhjain/web-crawler/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-// Mocking Fetcher Interface
-type httpFetcherMock struct {
-	mock.Mock
-}
-
-// NewHTTPFetcherMock returns a crawler instance
-func NewHTTPFetcherMock(client *http.Client) fetch.Fetcher {
-	return &httpFetcherMock{}
-}
-
-func (h *httpFetcherMock) Fetch(ctx context.Context,
-	site *types.Site) (err error) {
-	newSite := types.Site{URL: &url.URL{
-		Scheme: "http",
-		Host:   "www.google.com",
-	},
-		Links: nil}
-	site.Links = append(site.Links, &newSite)
-	return nil
-}
 
 func TestCrawl(t *testing.T) {
 
@@ -48,8 +23,8 @@ func TestCrawl(t *testing.T) {
 	// Close the server when test finishes
 	defer server.Close()
 
-	mockFetcher := new(httpFetcherMock)
-	mockFetcher.On("Fetch", mock.Anything).Return(nil)
+	mockParser := new(tests.HTTPParserMock)
+	mockParser.On("Parse", mock.Anything).Return(nil)
 	crawler := NewCrawler()
 	baseURL := server.URL
 	depth := 1

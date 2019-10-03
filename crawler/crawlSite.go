@@ -1,4 +1,4 @@
-package webpath
+package crawler
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	cerror "github.com/rishubhjain/web-crawler/errors"
-	"github.com/rishubhjain/web-crawler/fetch"
+	HTTPParser "github.com/rishubhjain/web-crawler/parse"
 	"github.com/rishubhjain/web-crawler/worker"
 
 	log "github.com/sirupsen/logrus"
@@ -19,20 +19,20 @@ type CrawlSite interface {
 
 type crawlSite struct {
 	workerPool worker.WorkerPool
-	fetcher    fetch.Fetcher
+	parser     HTTPParser.Parser
 	jobQueue   chan worker.Work
 }
 
-// New returns a CrawlSite instance
-func New() CrawlSite {
+// NewCrawlSite returns a CrawlSite instance
+func NewCrawlSite() CrawlSite {
 	// ToDo: Make this configurable
 	return &crawlSite{
 		workerPool: worker.WorkerPool{
 			MaxWorkers: 10000,
 		},
 		// Using default http client for now
-		fetcher:  fetch.NewHTTPFetcher(http.DefaultClient),
-		jobQueue: make(chan worker.Work, 1000),
+		parser:   HTTPParser.NewHTTPParser(http.DefaultClient),
+		jobQueue: make(chan worker.Work, 10000),
 	}
 }
 
@@ -81,8 +81,7 @@ func (w *crawlSite) run(work *worker.Work) {
 
 	work.Visited = work.Visited.Add(work.Site.URL.String())
 
-	// Fetch all URLs in the site
-	err := w.fetcher.Fetch(context.Background(), work.Site)
+	err := w.parser.Parse(context.Background(), work.Site)
 	if err != nil {
 		log.WithFields(log.Fields{"Error": err,
 			"URL": work.Site.URL.String()}).Error(cerror.ErrFetchFailed)
