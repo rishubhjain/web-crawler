@@ -12,21 +12,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// WalkURL abtracts walk functionality
-type WalkURL interface {
-	Walk(*worker.Work)
+// CrawlSite abtracts crawling single site functionality
+type CrawlSite interface {
+	Run(*worker.Work)
 }
 
-type walkURL struct {
+type crawlSite struct {
 	workerPool worker.WorkerPool
 	fetcher    fetch.Fetcher
 	jobQueue   chan worker.Work
 }
 
-// NewWalkURL returns a walkURL instance
-func NewWalkURL() WalkURL {
+// New returns a crawlSite instance
+func New() CrawlSite {
 	// ToDo: Make this configurable
-	return &walkURL{
+	return &crawlSite{
 		workerPool: worker.WorkerPool{
 			MaxWorkers: 10000,
 		},
@@ -36,17 +36,17 @@ func NewWalkURL() WalkURL {
 	}
 }
 
-// Walk function walks through each URL and adds site to tree
-func (w *walkURL) Walk(work *worker.Work) {
+// Run function crawls through each URL and adds sites to sitemap tree
+func (w *crawlSite) Run(work *worker.Work) {
 
-	w.workerPool.Fn = w.walk
+	w.workerPool.Fn = w.run
 
 	// Initialize the Worker Pool
 	w.workerPool.Initialize()
 
 	// Fan In approach - ignore
 	// {
-	// 	go w.walk(work)
+	// 	go w.run(work)
 	// }
 
 	stop := make(chan bool, 1)
@@ -80,7 +80,7 @@ func (w *walkURL) Walk(work *worker.Work) {
 	}
 }
 
-func (w *walkURL) walk(work *worker.Work) {
+func (w *crawlSite) run(work *worker.Work) {
 	// Check whether the URL has been already visited or not
 	if work.Visited.Has(work.Site.URL.String()) {
 		return
@@ -101,7 +101,7 @@ func (w *walkURL) walk(work *worker.Work) {
 		return
 	}
 
-	// Loop through all the URLs to walk through each url
+	// Loop through all the URLs to crawl through each url
 	for _, childURL := range work.Site.Links {
 		job := worker.Work{
 			Site:    childURL,

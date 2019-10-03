@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestWalk(t *testing.T) {
+func TestRun(t *testing.T) {
 
 	mockFetcher := new(tests.HTTPFetcherMock)
 	mockFetcher.On("Fetch", mock.Anything).Return(nil)
@@ -36,18 +36,18 @@ func TestWalk(t *testing.T) {
 		Visited: visited,
 	}
 
-	walkObj := NewWalkURL()
-	walkObj.Walk(&work)
+	crawlObj := New()
+	crawlObj.Run(&work)
 	assert.Equal(t, len(site.Links), 17)
 
 	site.Links = nil
-	walkObj.Walk(&work)
+	crawlObj.Run(&work)
 
 	assert.Equal(t, len(site.Links), 0)
 
 	mockFetcher.On("Fetch", mock.Anything).Return(errors.New("Test Error"))
 
-	walkObj.Walk(&work)
+	crawlObj.Run(&work)
 
 	assert.Equal(t, len(site.Links), 0)
 

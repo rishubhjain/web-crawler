@@ -37,7 +37,7 @@ func (c *crawler) Crawl(hostURL string, depth int) (*types.Site, error) {
 
 	// Start crawling from the base site
 	site := &types.Site{URL: URL}
-	walkObj := webpath.NewWalkURL()
+	crawlSiteObj := webpath.New()
 
 	// Creating work for the Walk function
 	work := worker.Work{
@@ -48,6 +48,6 @@ func (c *crawler) Crawl(hostURL string, depth int) (*types.Site, error) {
 		Visited: &types.Set{},
 	}
 
-	walkObj.Walk(&work)
+	crawlSiteObj.Run(&work)
 	return site, nil
 }
