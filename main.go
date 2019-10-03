@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	hostURL = flag.String("hostURL", "https://monzo.com",
+	hostURL = flag.String("hostURL", "https://google.com",
 		"host url to crawl")
-	depth = flag.Int("depth", 100000, "depth")
+	depth = flag.Int("depth", 1, "depth")
 )
 
 func main() {

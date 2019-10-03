@@ -23,7 +23,7 @@ type crawlSite struct {
 	jobQueue   chan worker.Work
 }
 
-// New returns a crawlSite instance
+// New returns a CrawlSite instance
 func New() CrawlSite {
 	// ToDo: Make this configurable
 	return &crawlSite{
@@ -32,7 +32,7 @@ func New() CrawlSite {
 		},
 		// Using default http client for now
 		fetcher:  fetch.NewHTTPFetcher(http.DefaultClient),
-		jobQueue: make(chan worker.Work, 10000),
+		jobQueue: make(chan worker.Work, 1000),
 	}
 }
 
@@ -43,11 +43,6 @@ func (w *crawlSite) Run(work *worker.Work) {
 
 	// Initialize the Worker Pool
 	w.workerPool.Initialize()
-
-	// Fan In approach - ignore
-	// {
-	// 	go w.run(work)
-	// }
 
 	stop := make(chan bool, 1)
 
@@ -69,13 +64,6 @@ func (w *crawlSite) Run(work *worker.Work) {
 		// TODO: Make this configurable
 		case <-time.After(time.Hour):
 			return
-			// Fan In approach
-			/* case doWork := <-w.jobQueue:
-				w.workerPool.AddWork(&doWork)
-			case <-time.Tick(10 * time.Second):
-				if w.workerPool.JobCount() == 0 {
-					return
-				} */
 		}
 	}
 }
@@ -108,7 +96,6 @@ func (w *crawlSite) run(work *worker.Work) {
 			Depth:   work.Depth - 1,
 			Visited: work.Visited,
 		}
-		//w.jobQueue <- job
 		w.workerPool.AddWork(&job)
 	}
 }
